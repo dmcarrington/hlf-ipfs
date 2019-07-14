@@ -1,0 +1,18 @@
+{
+    "host":"localhost",
+    "port":"8080",
+    "networkConfig": "ConnectionProfile.yaml",
+    "orgConfig": "org1.yaml",
+    "adminCred": {
+        "enrollmentID": "admin",
+        "enrollmentSecrets": "adminpw"
+    },
+    "blockchain": {
+        "org": "org1",
+        "peer": "peer0.org1.example.com",
+        "loggingLevel": "debug",
+        "chaincodeName": "simpleFileTransfer",
+        "channelName": "mychannel",
+        "targets":["peer0.org1.example.com"]
+    }
+}

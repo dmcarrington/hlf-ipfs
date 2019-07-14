@@ -1,0 +1,27 @@
+{
+  "name": "webapp",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "express": "~4.16.0",
+    "express-fileupload": "^1.1.4",
+    "express-handlebars": "^3.0.2",
+    "express-session": "^1.15.6",
+    "fabric-ca-client": "1.4.0",
+    "fabric-client": "^1.4.0",
+    "hbs": "~4.0.1",
+    "http-errors": "~1.6.2",
+    "ipfs-http-client": "^32.0.1",
+    "log4js": "^4.4.0",
+    "method-override": "^3.0.0",
+    "morgan": "~1.9.0",
+    "npm": "^5.5.1",
+    "passport": "^0.4.0",
+    "passport-ldapauth": "^2.1.2"
+  }
+}
