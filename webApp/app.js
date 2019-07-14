@@ -93,20 +93,14 @@ app.get('/', async function(req, res){
       const args = [username];
       const queryChaincode = require('./invoke.js').queryChaincode;
       let chaincodeContent = await queryChaincode(fabricClient, fcn, args);
-
-      /*const responses = chaincodeContent.payload.responses[0];
-      responses.replace(/\0/g, '');
-      const start = responses.indexOf("[");
-      console.log("responses: ", responses.substring(start, responses.length));
-      const jsonResponse = JSON.parse(responses.substring(start, responses.length));
-      userOriginatedTransfers = JSON.stringify(jsonResponse); */
       userOriginatedTransfers = chaincodeContent.payload.responses[0];
+      // TODO: parse the results and present as a table with a link to each IPFS entry
 
       // Repeat the query for transfers assigned to us
       fcn = "queryTransfersByRecipient";
       chaincodeContent = await queryChaincode(fabricClient, fcn, args);
-      console.log("Setting userRecipientTransfers to ", chaincodeContent.payload.responses[0]);
       userRecipientTransfers = chaincodeContent.payload.responses[0];
+      // TODO: parse the results and present as a table with a link to each IPFS entry
     }
   }
   res.render('home', {
@@ -123,12 +117,14 @@ app.get('/signin', function(req, res){
   res.render('signin');
 });
 
-//sends the request through our local signup strategy, and if successful takes user to homepage, otherwise returns then to signin page
-
+// Commit the selected file to IPFS, and record the transaction in our chaincode
 app.post('/upload-file', async function(req, res) {
 
     // Got our file with its content courtesy of express-fileupload
     // file.data contains the actual contents of the file
+    
+    // TODO: we shouldn't really be reading the entire content of the file asynchronously as part
+    // of this endpoint, but it will do for now as long as we only test with small files :)
     const file = req.files.uploadFilename;
     const fileContent = file.data;
 
@@ -138,7 +134,7 @@ app.post('/upload-file', async function(req, res) {
       res.render('home', {user: req.session.user.cn, message: "Failed to commit file to IPFS"});
     }
     else {
-      console.log(req);
+      // File was successfully committed to IPFS, now log the transfer in our chaincode
       const recipient = req.body.recipient;
       const msg = "File commited sucessfully: " + commitHash;
       const fcn = "createTransfer";
@@ -152,7 +148,7 @@ app.post('/upload-file', async function(req, res) {
       if (!proposalObject.success){
         res.send({
           success: 500, 
-          message: "Unable to commit your transaction"});
+          message: "Unable to propose your transaction"});
       }
       
       const commitTransaction = require('./invoke.js').commitTransaction;
@@ -168,26 +164,19 @@ app.post('/upload-file', async function(req, res) {
 
       if (committedObject.payload.commitStatus == 'SUCCESS'){
         console.log("success!");
-        /*const results = await blockchain.attachEventHub(clientObject.payload.client, proposalObject.payload.txIDString, 3000);
-        res.send({
-          success: 200, 
-          message: results});*/
       }
       res.render('home', {user: req.session.user.cn, message: msg});
     }
 
 });
 
+// Enrol LDAP user into Fabric
 app.post('/local-reg', async function(req, res) {
     const username = req.body.username;
     const password = req.body.password;
     const enrolUser = require('./enrolUser').enrolUser;
     const result = await enrolUser(username, password);
-    /*const clientObj = await blockchain.getClient(username, password);
-    if (clientObj.success) {
-    
-      const registerUserObj = await blockchain.registerUser(clientObj.payload.client, clientObj.payload.enrolledUserObj, registrantName);
-      console.log(registerUserObj);*/
+   
     if(result === 'ok') {
       res.render('signin', {message: "User enrolled successfully"})
     }
@@ -209,6 +198,7 @@ app.get('/logout', function(req, res){
   req.session.notice = "You have successfully been logged out " + name + "!";
 });
 
+// Passport-ldapauth of a user to access the web app
 app.post('/login', async function(req, res, next) {
   passport.authenticate('ldapauth', async function (err, user, info){
     if(user){
