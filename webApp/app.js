@@ -94,7 +94,12 @@ app.get('/', async function(req, res){
       const queryChaincode = require('./invoke.js').queryChaincode;
       let chaincodeContent = await queryChaincode(fabricClient, fcn, args);
 
-      console.log("Setting userOriginatedTransfers to ", chaincodeContent.payload.responses[0]);
+      /*const responses = chaincodeContent.payload.responses[0];
+      responses.replace(/\0/g, '');
+      const start = responses.indexOf("[");
+      console.log("responses: ", responses.substring(start, responses.length));
+      const jsonResponse = JSON.parse(responses.substring(start, responses.length));
+      userOriginatedTransfers = JSON.stringify(jsonResponse); */
       userOriginatedTransfers = chaincodeContent.payload.responses[0];
 
       // Repeat the query for transfers assigned to us

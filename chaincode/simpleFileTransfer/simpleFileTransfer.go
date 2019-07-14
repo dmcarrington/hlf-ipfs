@@ -12,6 +12,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 
@@ -56,6 +57,8 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response 
 		return s.createTransfer(APIstub, args)
 	} else if function == "queryAllTransfers" {
 		return s.queryAllTransfers(APIstub, args)
+	} else if function == "queryTransfersByRecipient" {
+		return s.queryTransfersByRecipient(APIstub, args)
 	}
 
 	return shim.Error("Invalid Smart Contract function name.")
@@ -110,6 +113,62 @@ func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args
 	APIstub.PutState(key, transferAsBytes)
 
 	return shim.Success(nil)
+}
+
+// ===== Example: Parameterized rich query =================================================
+// queryTransfersByRecipient queries for transfers based on a passed in recipient.
+// This is an example of a parameterized query where the query logic is baked into the chaincode,
+// and accepting a single query parameter (owner).
+// Only available on state databases that support rich query (e.g. CouchDB)
+// =========================================================================================
+func (t *SmartContract) queryTransfersByRecipient(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+
+	//   0
+	// "bob"
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+
+	recipientName := strings.ToLower(args[0])
+
+	queryString := fmt.Sprintf("{\"selector\":{\"recipient\":\"%s\"}}", recipientName)
+
+	resultsIterator, err := APIstub.GetQueryResult(queryString)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	defer resultsIterator.Close()
+
+	// buffer is a JSON array containing QueryResults
+	var buffer bytes.Buffer
+	buffer.WriteString("[")
+
+	bArrayMemberAlreadyWritten := false
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+		// Add a comma before array members, suppress it for the first array member
+		if bArrayMemberAlreadyWritten == true {
+			buffer.WriteString(",")
+		}
+		buffer.WriteString("{\"Key\":")
+		buffer.WriteString("\"")
+		buffer.WriteString(queryResponse.Key)
+		buffer.WriteString("\"")
+
+		buffer.WriteString(", \"Record\":")
+		// Record is a JSON object, so we write as-is
+		buffer.WriteString(string(queryResponse.Value))
+		buffer.WriteString("}")
+		bArrayMemberAlreadyWritten = true
+	}
+	buffer.WriteString("]")
+
+	fmt.Printf("- queryAllTransfers:\n%s\n", buffer.String())
+
+	return shim.Success(buffer.Bytes())
 }
 
 func (s *SmartContract) queryAllTransfers(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
