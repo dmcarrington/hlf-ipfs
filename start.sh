@@ -11,6 +11,8 @@ set -ev
 # don't rewrite paths for Windows Git Bash users
 export MSYS_NO_PATHCONV=1
 
+export COMPOSE_PROJECT_NAME=hlf-ipfs
+
 # Take down any running containers, including the LDAP server
 docker-compose -f docker-compose.yml down
 
