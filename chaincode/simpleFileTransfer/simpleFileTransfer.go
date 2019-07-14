@@ -64,6 +64,10 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response 
 	return shim.Error("Invalid Smart Contract function name.")
 }
 
+// ======================== queryTransfer =================================================
+// queryTransfersByRecipient queries for transfers based on a specific key.
+// args[0]: key of the record to search for
+// =========================================================================================
 func (s *SmartContract) queryTransfer(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
 	if len(args) != 1 {
@@ -74,11 +78,18 @@ func (s *SmartContract) queryTransfer(APIstub shim.ChaincodeStubInterface, args 
 	return shim.Success(transferAsBytes)
 }
 
+// Set the initial state of the ledger - currently unused
 func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Response {
 
 	return shim.Success(nil)
 }
 
+// ======================== createTransfer =================================================
+// createTransfer creates a new transfer of a single file from an originator and recipient.
+// args[0]: originator
+// args[1]: hash of the file in ipfs
+// args[2]: recipient
+// =========================================================================================
 func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
 	if len(args) != 3 {
@@ -115,16 +126,14 @@ func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args
 	return shim.Success(nil)
 }
 
-// ===== Example: Parameterized rich query =================================================
+// ============= queryTransfersByRecipient =================================================
 // queryTransfersByRecipient queries for transfers based on a passed in recipient.
 // This is an example of a parameterized query where the query logic is baked into the chaincode,
-// and accepting a single query parameter (owner).
+// and accepting a single query parameter (recipient).
 // Only available on state databases that support rich query (e.g. CouchDB)
 // =========================================================================================
 func (t *SmartContract) queryTransfersByRecipient(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	//   0
-	// "bob"
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
@@ -171,6 +180,10 @@ func (t *SmartContract) queryTransfersByRecipient(APIstub shim.ChaincodeStubInte
 	return shim.Success(buffer.Bytes())
 }
 
+// ==================== queryAllTransfers =================================================
+// queryTransfersByRecipient queries for transfers based on a passed in originator.
+// This is an example of a query using the partial composite key to locate a record
+// =========================================================================================
 func (s *SmartContract) queryAllTransfers(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
 	resultsIterator, err := APIstub.GetStateByPartialCompositeKey("fileTransfer", []string{args[0]})

@@ -103,10 +103,10 @@ app.get('/', async function(req, res){
       userOriginatedTransfers = chaincodeContent.payload.responses[0];
 
       // Repeat the query for transfers assigned to us
-      /*fcn = "queryTransfersByRecipient";
+      fcn = "queryTransfersByRecipient";
       chaincodeContent = await queryChaincode(fabricClient, fcn, args);
       console.log("Setting userRecipientTransfers to ", chaincodeContent.payload.responses[0]);
-      userRecipientTransfers = chaincodeContent.payload.responses[0];*/
+      userRecipientTransfers = chaincodeContent.payload.responses[0];
     }
   }
   res.render('home', {
