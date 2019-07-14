@@ -181,9 +181,8 @@ app.post('/local-reg', async function(req, res) {
       res.render('signin', {message: "User enrolled successfully"})
     }
     else {
-      console.log(clientObj);
-      res.render('signin', {message: "Failed to enrol user with Hyperledger Fabric network. Please ensure that the \
-      username and password are valid on the LDAP server"})
+      res.render('signin', {message: "Failed to enrol user with Hyperledger Fabric network. The \
+      username and password may not be valid on the LDAP server, or the user may already be installed."})
     }
   }
 );
