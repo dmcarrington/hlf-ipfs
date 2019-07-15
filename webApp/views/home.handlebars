@@ -11,14 +11,47 @@
     <div class="panel-body">
       <p>Username: {{user}}</p>
       <p>Fabric enrollment status: {{userEnrolled}}</p>
-      <p>Outgoing Transfers: {{userOriginatedTransfers}}</p>
-      <p>Incoming Transfers: {{userRecipientTransfers}}</p>
-      <form id="upload-file" action="/upload-file" method="post" encType="multipart/form-data">
-      <h2>File Upload</h2>
-      Recipient: <input id="upload-desination" name="recipient" type="text"/><br>
-      File: <input id="upload-filename" name="uploadFilename" type="file"/>
-      <input type="submit" class="btn btn-primary btn-sm" value="Upload"/>
-      </form>
+      <p>Outgoing Transfers:</p>
+      <table>
+        <tr>
+          <th>File Hash</th>
+          <th>Recipient</th>
+        </tr>
+       {{#each userOriginatedTransfers}}
+        <tr>
+          <td>{{this.Record.fileHash}}<br>
+          <td>{{this.Record.recipient}}</td>
+        </tr>
+       {{else}}
+        No outgoing transfers to display
+       {{/each}}
+      </table>
+      <p>Incoming Transfers:</p>
+      <table>
+        <tr>
+          <th>File Hash</th>
+          <th>Originator</th>
+        </tr>
+      {{#each userRecipientTransfers}}
+        <tr>
+          <td>{{this.Record.fileHash}}<br>
+          <td>{{this.Record.recipient}}</td>
+        </tr>
+      {{else}}
+        No inbound transfers to display
+      {{/each}}
+      </table>
+      
+      {{#if userEnrolled}}
+        <form id="upload-file" action="/upload-file" method="post" encType="multipart/form-data">
+        <h2>File Upload</h2>
+        Recipient: <input id="upload-desination" name="recipient" type="text"/><br>
+        File: <input id="upload-filename" name="uploadFilename" type="file"/>
+        <input type="submit" class="btn btn-primary btn-sm" value="Upload"/>
+        </form>
+      {{else}}
+        Please register with Fabric to continue.
+      {{/if}}
       {{message}}
     </div>
   </div>

@@ -59,6 +59,8 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response 
 		return s.queryAllTransfers(APIstub, args)
 	} else if function == "queryTransfersByRecipient" {
 		return s.queryTransfersByRecipient(APIstub, args)
+	} else if function == "queryTransfersByOriginator" {
+		return s.queryTransfersByOriginator(APIstub, args)
 	}
 
 	return shim.Error("Invalid Smart Contract function name.")
@@ -126,6 +128,60 @@ func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args
 	return shim.Success(nil)
 }
 
+// ============= queryTransfersByOriginator =================================================
+// queryTransfersByOriginator queries for transfers based on a passed in originator.
+// This is an example of a parameterized query where the query logic is baked into the chaincode,
+// and accepting a single query parameter (originator).
+// Only available on state databases that support rich query (e.g. CouchDB)
+// =========================================================================================
+func (t *SmartContract) queryTransfersByOriginator(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+
+	originatorName := strings.ToLower(args[0])
+
+	queryString := fmt.Sprintf("{\"selector\":{\"originator\":\"%s\"}}", originatorName)
+
+	resultsIterator, err := APIstub.GetQueryResult(queryString)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	defer resultsIterator.Close()
+
+	// buffer is a JSON array containing QueryResults
+	var buffer bytes.Buffer
+	buffer.WriteString("[")
+
+	bArrayMemberAlreadyWritten := false
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+		// Add a comma before array members, suppress it for the first array member
+		if bArrayMemberAlreadyWritten == true {
+			buffer.WriteString(",")
+		}
+		buffer.WriteString("{\"Key\":")
+		buffer.WriteString("\"")
+		buffer.WriteString(queryResponse.Key)
+		buffer.WriteString("\"")
+
+		buffer.WriteString(", \"Record\":")
+		// Record is a JSON object, so we write as-is
+		buffer.WriteString(string(queryResponse.Value))
+		buffer.WriteString("}")
+		bArrayMemberAlreadyWritten = true
+	}
+	buffer.WriteString("]")
+
+	fmt.Printf("- queryTransfersByOriginator:\n%s\n", buffer.String())
+
+	return shim.Success(buffer.Bytes())
+}
+
 // ============= queryTransfersByRecipient =================================================
 // queryTransfersByRecipient queries for transfers based on a passed in recipient.
 // This is an example of a parameterized query where the query logic is baked into the chaincode,
@@ -175,7 +231,7 @@ func (t *SmartContract) queryTransfersByRecipient(APIstub shim.ChaincodeStubInte
 	}
 	buffer.WriteString("]")
 
-	fmt.Printf("- queryAllTransfers:\n%s\n", buffer.String())
+	fmt.Printf("- queryTransfersByRecipient:\n%s\n", buffer.String())
 
 	return shim.Success(buffer.Bytes())
 }

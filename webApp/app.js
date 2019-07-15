@@ -10,7 +10,8 @@ const passport     = require('passport'),
     bodyParser   = require('body-parser'),
     methodOverride = require('method-override'),
     session = require('express-session'),
-    LdapStrategy = require('passport-ldapauth');
+    LdapStrategy = require('passport-ldapauth'),
+    parseJson = require('parse-json');
 
 // If this is running in a Docker container, the url
 // must be the name of the container, else localhost.
@@ -82,25 +83,48 @@ app.get('/', async function(req, res){
   let userRecipientTransfers = undefined;
   if(req.session.user) {
     username = req.session.user.cn;
-    userEnrolled = true;
+    
     var fabricClient = require('./config/FabricClient');
     await fabricClient.initCredentialStores();
     await fabricClient.getCertificateAuthority();
     let user = await fabricClient.getUserContext(username, true);
     if(user) {
+      userEnrolled = true;
+
       // query the chaincode for transfers created by this user
-      let fcn = "queryAllTransfers";
+      let fcn = "queryTransfersByOriginator";
       const args = [username];
       const queryChaincode = require('./invoke.js').queryChaincode;
       let chaincodeContent = await queryChaincode(fabricClient, fcn, args);
-      userOriginatedTransfers = chaincodeContent.payload.responses[0];
-      // TODO: parse the results and present as a table with a link to each IPFS entry
+      // parse the results and present as a table with a link to each IPFS entry
+      let response = chaincodeContent.payload.responses[0];
+      let start = response.indexOf("[");
+      let responseJsonSource = response.substring(start, response.length);
+      responseJsonSource = responseJsonSource.replace(/\u0000/gu, "");
+      try{
+        const responseJson = parseJson(responseJsonSource);
+        userOriginatedTransfers = responseJson;
+      } catch (error) {
+        console.log(error);
+      }
 
       // Repeat the query for transfers assigned to us
       fcn = "queryTransfersByRecipient";
       chaincodeContent = await queryChaincode(fabricClient, fcn, args);
-      userRecipientTransfers = chaincodeContent.payload.responses[0];
+      //userRecipientTransfers = chaincodeContent.payload.responses[0];
       // TODO: parse the results and present as a table with a link to each IPFS entry
+      chaincodeContent = await queryChaincode(fabricClient, fcn, args);
+      // parse the results and present as a table with a link to each IPFS entry
+      response = chaincodeContent.payload.responses[0];
+      start = response.indexOf("[");
+      responseJsonSource = response.substring(start, response.length);
+      responseJsonSource = responseJsonSource.replace(/\u0000/gu, "");
+      try{
+        const responseJson = parseJson(responseJsonSource);
+        userRecipientTransfers = responseJson;
+      } catch (error) {
+        console.log(error);
+      }
     }
   }
   res.render('home', {

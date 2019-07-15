@@ -1,19 +1,19 @@
 'use strict';
 
-/*async function getUserEnrolmentStatus(username, fabricClient) {
+async function getUserEnrolmentStatus(username) {
   console.log('checking enrolment status for user: ', username);
   var fabricClient = require('./config/FabricClient');
-  var connection = fabricClient;
+  //var connection = fabricClient;
   //var fabricCAClient;
-  await connection.initCredentialStores();
-  fabricCAClient = connection.getCertificateAuthority();
-  let user = await connection.getUserContext(username, true);
+  await fabricClient.initCredentialStores();
+  await fabricClient.getCertificateAuthority();
+  let user = await fabricClient.getUserContext(username, true);
   if(user){
     return true;
   } else {
     return false;
   }
-}*/
+}
 
 async function enrolUser(username, password) {
   var fabricClient = require('./config/FabricClient');
@@ -60,6 +60,6 @@ async function enrolUser(username, password) {
 
 
 module.exports = {
-  enrolUser: enrolUser/*,
-  getUserEnrolmentStatus: getUserEnrolmentStatus*/
+  enrolUser: enrolUser,
+  getUserEnrolmentStatus: getUserEnrolmentStatus
 };
