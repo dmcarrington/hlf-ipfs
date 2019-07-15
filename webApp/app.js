@@ -111,9 +111,7 @@ app.get('/', async function(req, res){
       // Repeat the query for transfers assigned to us
       fcn = "queryTransfersByRecipient";
       chaincodeContent = await queryChaincode(fabricClient, fcn, args);
-      //userRecipientTransfers = chaincodeContent.payload.responses[0];
-      // TODO: parse the results and present as a table with a link to each IPFS entry
-      chaincodeContent = await queryChaincode(fabricClient, fcn, args);
+      
       // parse the results and present as a table with a link to each IPFS entry
       response = chaincodeContent.payload.responses[0];
       start = response.indexOf("[");
@@ -189,7 +187,8 @@ app.post('/upload-file', async function(req, res) {
       if (committedObject.payload.commitStatus == 'SUCCESS'){
         console.log("success!");
       }
-      res.render('home', {user: req.session.user.cn, message: msg});
+      //res.render('home', {user: req.session.user.cn, message: msg});
+      res.redirect("/");
     }
 
 });
