@@ -160,7 +160,7 @@ app.post('/upload-file', async function(req, res) {
       const recipient = req.body.recipient;
       const msg = "File commited sucessfully: " + commitHash;
       const fcn = "createTransfer";
-      const args = [req.session.user.cn, commitHash, recipient];
+      const args = [req.session.user.cn, commitHash, recipient, file];
       var fabricClient = require('./config/FabricClient');
       await fabricClient.initCredentialStores();
       await fabricClient.getCertificateAuthority();

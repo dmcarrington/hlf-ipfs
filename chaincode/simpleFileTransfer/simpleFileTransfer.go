@@ -26,10 +26,12 @@ type SmartContract struct {
 
 // Define the car structure, with 4 properties.  Structure tags are used by encoding/json library
 type fileTransfer struct {
-	UUID       string `json:"uuid"`
-	Originator string `json:"originator"`
-	FileHash   string `json:"fileHash"`
-	Recipient  string `json:"recipient"`
+	UUID             string `json:"uuid"`
+	Originator       string `json:"originator"`
+	FileHash         string `json:"fileHash"`
+	Recipient        string `json:"recipient"`
+	FileName         string `json:"fileName"`
+	TransferComplete bool   `json:"transferComplete"`
 }
 
 /*
@@ -95,7 +97,7 @@ func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Respo
 func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
 	if len(args) != 3 {
-		return shim.Error("Incorrect number of arguments. Expecting 3")
+		return shim.Error("Incorrect number of arguments. Expecting 4")
 	}
 
 	id, err := uuid.NewUUID()
@@ -108,6 +110,7 @@ func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args
 	originator := args[0]
 	fileHash := args[1]
 	recipient := args[2]
+	filename := args[3]
 
 	// Ensure that this transfer has not already been created before continuing
 	key, _ := APIstub.CreateCompositeKey("fileTransfer", []string{originator, fileHash, recipient})
@@ -119,7 +122,7 @@ func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args
 		return shim.Error("This transfer already exists: " + fileHash)
 	}
 
-	var transfer = fileTransfer{UUID: uuid, Originator: originator, FileHash: fileHash, Recipient: recipient}
+	var transfer = fileTransfer{UUID: uuid, Originator: originator, FileHash: fileHash, Recipient: recipient, FileName: filename, TransferComplete: false}
 
 	transferAsBytes, _ := json.Marshal(transfer)
 
