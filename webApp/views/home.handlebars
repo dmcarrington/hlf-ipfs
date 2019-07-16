@@ -32,11 +32,13 @@
         <tr>
           <th>File Hash</th>
           <th>Originator</th>
+          <th>Actions</th>
         </tr>
         {{#each userRecipientTransfers}}
           <tr>
             <td>{{this.Record.fileHash}}<br>
             <td>{{this.Record.recipient}}</td>
+            <td><button type="button" onclick=openFromIPFS("{{this.Record.uuid}}")>Open</button></td>
           </tr>
         {{else}}
           No inbound transfers to display
@@ -70,3 +72,9 @@
   </div>
 
 {{/if}}
+
+<script>
+  function openFromIPFS(UUID){
+    console.log(UUID);
+  }
+</script>
