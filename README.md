@@ -1,11 +1,6 @@
-# Hyperledger Fabric LDAP interface
+# Hyperledger Fabric IPFS file transfer recorder
 
-This repository holds example code for using LDAP authentication for enrolling users in the Hyperledger Fabric CA. At present, all interactions are carried out using shell scripts.
-
-## Aims for future development
-1) Add scripts to add and remove users on the LDAP docker.
-2) Start using SDK functions where possible to replace shell scripting.
-3) Add a simple web UI to allow a user to log on, authenticated against the LDAP server, and then execute chaincode as that user.
+This rproject demonstrates how Hyperledger Fabric can be used to record transfers of files transferred across the IPFS network. It is based upon the hlf-ldap repository for authenticating user accounts. At a high level, a user, once enrolled in the Fabric CA, can initiate a file transfer using IPFS to another user on the system. The details of the transfer, including originator, recipient, file name and IPFS entry, are recorded in the Fabric chaincode. The intention is that this information could be examined in future by a hypothetical auditor.
 
 ## Basic Network Config
 
@@ -26,14 +21,19 @@ To add a new user to the LDAP server, run ``addUser.sh <firstname> <lastname>``.
 Add new users to the LDAP server using the ``addUser.sh`` script as above.
 To register a new user to the CA, Click on "Sign in", then "I need to create an account", and enter the credentials provided to the addUser script.
 
-## WebSocket server **
-This creates a WebSocket server that listens for messages on port 8081 and interacts with the HLF network via the SDK. At present, only the enrol functionality has been implemented.
-
 ## Webapp
 Intended to provide a user logon interface which will then allow authenticated interaction with the blockchain.
 
 At present, the user can log on using an account that has been created using the ``addUser.sh`` followed by one of the ``enrolUser`` scripts.
 The ``I need to create an account`` route enrols a previously created LDAP user into the HLF network.
+
+After logging in, provided the account has been successfully registered with Fabric, the user should see lists of all transfers that have been initiated by them, and all transfers that have them as them as the recipient. A simple web form allows the user to upload a file to IPFS and specify a recipient.
+
+## TODO
+Complete work on getting 'open' buttons to work.
+Fix updating of lists after committing a new file.
+Display file name and received status. 
+Encrypt files using PGP or similar before saving to IPFS
 
 ### Notes on building Chaincode with 3rd party dependencies
 The fileTransfer chaincode requires the use of 3rd party go components. This requires the code to be vendored before being instantiated on the Fabric network. I used the following steps, based on https://www.youtube.com/watch?v=-mlUaJbFHcM.

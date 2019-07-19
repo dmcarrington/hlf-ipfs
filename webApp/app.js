@@ -160,11 +160,12 @@ app.post('/upload-file', async function(req, res) {
       const recipient = req.body.recipient;
       const msg = "File commited sucessfully: " + commitHash;
       const fcn = "createTransfer";
-      const args = [req.session.user.cn, commitHash, recipient, file];
+      const args = [req.session.user.cn.trim(), commitHash, recipient, file.name];
+      console.log("Args: ", args);
       var fabricClient = require('./config/FabricClient');
       await fabricClient.initCredentialStores();
       await fabricClient.getCertificateAuthority();
-      await fabricClient.getUserContext(req.session.user.cn, true);
+      await fabricClient.getUserContext(req.session.user.cn.trim(), true);
       const proposeTransaction = require('./invoke.js').proposeTransaction;
       const proposalObject = await proposeTransaction(fabricClient, fcn, args);
       if (!proposalObject.success){

@@ -93,10 +93,11 @@ func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Respo
 // args[0]: originator
 // args[1]: hash of the file in ipfs
 // args[2]: recipient
+// args[3]: filename
 // =========================================================================================
 func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 3 {
+	if len(args) != 4 {
 		return shim.Error("Incorrect number of arguments. Expecting 4")
 	}
 

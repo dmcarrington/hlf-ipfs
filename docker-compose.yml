@@ -193,6 +193,7 @@ services:
     networks:
       basic:
         ipv4_address: 10.6.1.5
+    #command: ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '["http://localhost:3000"]' && ipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods '["PUT", "GET", "POST"]'
 
   ipfs1:
     container_name: ipfs1
