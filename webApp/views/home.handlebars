@@ -38,7 +38,7 @@
           <tr>
             <td>{{this.Record.fileHash}}<br>
             <td>{{this.Record.recipient}}</td>
-            <td><button type="button" onclick=openFromIPFS("{{this.Record.fileHash}}", "{{this.Record.fileName}}", "{{this.Record.uuid}}")>Open</button></td>
+            <td><button type="button" onclick='openFromIPFS("{{this.Record.fileHash}}", "{{this.Record.fileName}}", "{{this.Record.uuid}}")'>Open</button></td>
           </tr>
         {{else}}
           No inbound transfers to display
@@ -76,6 +76,7 @@
 <script>
   function openFromIPFS(fileHash, filename, uuid){
     console.log(fileHash);
+    console.log(uuid);
     var ipfs = new IPFS({host: 'ipfs.infura.io', port: '5001', protocol: 'https'});
     ipfs.cat(fileHash, (err, result) => {
       if(err) {
@@ -85,12 +86,16 @@
         console.log(result);
         // TODO: save result as filename
         // TODO: log the fact that we have completed this transfer
-        /*fetch('/transferComplete', {
+        fetch('/transferComplete', {
           method: 'post',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify({
             uuid: uuid
           })
-        }); */
+        }); 
       }
     });
   }

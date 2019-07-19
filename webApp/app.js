@@ -142,7 +142,10 @@ app.get('/signin', function(req, res){
 app.post('/transferComplete', async function(req, res) {
   console.log('in transferComplete');
   console.log("user: ", req.session.user);
-  const uuid = file.data;
+  console.log(req.body);
+
+  const username = req.session.user.cn;
+  const uuid = req.bosy.uuid;
 });
 
 // Commit the selected file to IPFS, and record the transaction in our chaincode
