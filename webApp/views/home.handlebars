@@ -85,7 +85,22 @@
         console.log("Success:");
         console.log(result);
         // TODO: save result as filename
-        // TODO: log the fact that we have completed this transfer
+        const resultBlob = Blob(result);
+        const url = window.URL.createObjectURL(resultBlob);
+        //console.log(url);
+        //const a = document.createElement('a');
+        //a.style.display = 'none';
+        //a.href = url;
+        //a.download = filename;
+        //document.body.appendChild(a);
+        //a.click();
+        browser.downloads.download({url: url,
+          filename: filename,
+          conflictAction: 'uniquify',
+          saveAs: true}).then(console.log("download started"), console.log("download failed"));
+        window.URL.revokeObjectURL(url);
+
+        // Tell the app to log the fact that we have completed this transfer
         fetch('/transferComplete', {
           method: 'post',
           headers: {
