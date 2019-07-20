@@ -14,13 +14,17 @@
       <p><b>Outgoing Transfers:</b></p>
       <table>
         <tr>
-          <th>File Hash</th>
+          <th>File Name</th>
+          <th>IPFS Hash</th>
           <th>Recipient</th>
+          <th>Complete</th>
         </tr>
         {{#each userOriginatedTransfers}}
           <tr>
+            <td>{{this.Record.fileName}}</td>
             <td>{{this.Record.fileHash}}<br>
             <td>{{this.Record.recipient}}</td>
+            <td>{{this.Record.transferComplete}}</td>
           </tr>
         {{else}}
           No outgoing transfers to display
@@ -30,15 +34,19 @@
       <p><b>Incoming Transfers:</b></p>
       <table>
         <tr>
-          <th>File Hash</th>
+          <th>File Name</th>
+          <th>IPFS Hash</th>
           <th>Originator</th>
           <th>Actions</th>
+          <th>Complete</th>
         </tr>
         {{#each userRecipientTransfers}}
           <tr>
+            <td>{{this.Record.fileName}}</td>
             <td>{{this.Record.fileHash}}<br>
             <td>{{this.Record.recipient}}</td>
             <td><button type="button" onclick='openFromIPFS("{{this.Record.fileHash}}", "{{this.Record.fileName}}", "{{this.Record.uuid}}")'>Open</button></td>
+            <td>{{this.Record.transferComplete}}</td>
           </tr>
         {{else}}
           No inbound transfers to display
@@ -74,31 +82,31 @@
 {{/if}}
 <script type="text/javascript" src="ipfs-mini.min.js"></script>
 <script>
-  function openFromIPFS(fileHash, filename, uuid){
+  async function openFromIPFS(fileHash, filename, uuid){
     console.log(fileHash);
     console.log(uuid);
+
     var ipfs = new IPFS({host: 'ipfs.infura.io', port: '5001', protocol: 'https'});
-    ipfs.cat(fileHash, (err, result) => {
+
+    ipfs.cat(fileHash, function(err, result) {
       if(err) {
         console.log("ERROR: ", err);
+        // TODO: report the error
       } else {
         console.log("Success:");
         console.log(result);
-        // TODO: save result as filename
-        const resultBlob = Blob(result);
+        // Save result as filename.
+        // TODO: fix for non-text files
+        const resultBlob = new Blob([result], { type: 'plain/text',
+                                      endings: 'native' });
+
         const url = window.URL.createObjectURL(resultBlob);
-        //console.log(url);
-        //const a = document.createElement('a');
-        //a.style.display = 'none';
-        //a.href = url;
-        //a.download = filename;
-        //document.body.appendChild(a);
-        //a.click();
-        browser.downloads.download({url: url,
-          filename: filename,
-          conflictAction: 'uniquify',
-          saveAs: true}).then(console.log("download started"), console.log("download failed"));
-        window.URL.revokeObjectURL(url);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
 
         // Tell the app to log the fact that we have completed this transfer
         fetch('/transferComplete', {
@@ -111,7 +119,9 @@
             uuid: uuid
           })
         }); 
+        
       }
+      
     });
   }
 </script>

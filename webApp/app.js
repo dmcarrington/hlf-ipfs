@@ -146,6 +146,8 @@ app.post('/transferComplete', async function(req, res) {
 
   const username = req.session.user.cn;
   const uuid = req.body.uuid;
+  // TODO invoke the markTransferAsRead function as this user with this uuid
+
   res.status(200);
 });
 
