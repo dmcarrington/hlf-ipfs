@@ -115,15 +115,9 @@ func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args
 	recipient := args[2]
 	filename := args[3]
 
-	// Ensure that this transfer has not already been created before continuing
-	//key, _ := APIstub.CreateCompositeKey("fileTransfer", []string{originator, fileHash, recipient})
-	//existingTransfer, err := APIstub.GetState(key)
-
 	if err != nil {
 		return shim.Error("Failed to get transfer: " + err.Error())
-	} /*else if existingTransfer != nil {
-		return shim.Error("This transfer already exists: " + fileHash)
-	}*/
+	}
 
 	var transfer = fileTransfer{UUID: uuid, Originator: originator, FileHash: fileHash, Recipient: recipient, FileName: filename, TransferComplete: false}
 
@@ -274,50 +268,6 @@ func (t *SmartContract) queryTransfersByRecipient(APIstub shim.ChaincodeStubInte
 
 	return shim.Success(buffer.Bytes())
 }
-
-// ==================== queryAllTransfers =================================================
-// queryTransfersByRecipient queries for transfers based on a passed in originator.
-// This is an example of a query using the partial composite key to locate a record
-// =========================================================================================
-/*func (s *SmartContract) queryAllTransfers(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
-
-	resultsIterator, err := APIstub.GetStateByPartialCompositeKey("fileTransfer", []string{args[0]})
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-	defer resultsIterator.Close()
-
-	// buffer is a JSON array containing QueryResults
-	var buffer bytes.Buffer
-	buffer.WriteString("[")
-
-	bArrayMemberAlreadyWritten := false
-	for resultsIterator.HasNext() {
-		queryResponse, err := resultsIterator.Next()
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-		// Add a comma before array members, suppress it for the first array member
-		if bArrayMemberAlreadyWritten == true {
-			buffer.WriteString(",")
-		}
-		buffer.WriteString("{\"Key\":")
-		buffer.WriteString("\"")
-		buffer.WriteString(queryResponse.Key)
-		buffer.WriteString("\"")
-
-		buffer.WriteString(", \"Record\":")
-		// Record is a JSON object, so we write as-is
-		buffer.WriteString(string(queryResponse.Value))
-		buffer.WriteString("}")
-		bArrayMemberAlreadyWritten = true
-	}
-	buffer.WriteString("]")
-
-	fmt.Printf("- queryAllTransfers:\n%s\n", buffer.String())
-
-	return shim.Success(buffer.Bytes())
-}*/
 
 // The main function is only relevant in unit test mode. Only included here for completeness.
 func main() {
