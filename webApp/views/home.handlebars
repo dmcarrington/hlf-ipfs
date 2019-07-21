@@ -12,30 +12,33 @@
       <p><b>Username: </b>{{user}}</p>
       <p><b>Fabric enrollment status: </b>{{userEnrolled}}</p>
       <p><b>Outgoing Transfers:</b></p>
-      <table>
-        <tr>
-          <th>File Name</th>
-          <th>IPFS Hash</th>
-          <th>Time Created</th>
-          <th>Recipient</th>
-          <th>Complete</th>
-          <th>Time Completed</th>
-        </tr>
-        {{#each userOriginatedTransfers}}
+      {{#if userOriginatedTransfers}}
+        <table>
           <tr>
-            <td>{{this.Record.fileName}}</td>
-            <td>{{this.Record.fileHash}}<br>
-            <td>{{this.Record.creationTime}}</td>
-            <td>{{this.Record.recipient}}</td>
-            <td>{{this.Record.transferComplete}}</td>
-            <td>{{this.Record.CompletionTime}}</td>
+            <th>File Name</th>
+            <th>IPFS Hash</th>
+            <th>Time Created</th>
+            <th>Recipient</th>
+            <th>Complete</th>
+            <th>Time Completed</th>
           </tr>
-        {{else}}
+          {{#each userOriginatedTransfers}}
+            <tr>
+              <td>{{this.Record.fileName}}</td>
+              <td>{{this.Record.fileHash}}<br>
+              <td>{{this.Record.creationTime}}</td>
+              <td>{{this.Record.recipient}}</td>
+              <td>{{this.Record.transferComplete}}</td>
+              <td>{{this.Record.CompletionTime}}</td>
+            </tr>
+          {{/each}}
+        </table>
+      {{else}}
           No outgoing transfers to display
-        {{/each}}
-      </table>
+      {{/if}}
       <br>
       <p><b>Incoming Transfers:</b></p>
+      {{#if userRecipientTransfers}}
       <table>
         <tr>
           <th>File Name</th>
@@ -56,10 +59,11 @@
             <td>{{this.Record.transferComplete}}</td>
             <td>{{this.Record.CompletionTime}}</td>
           </tr>
-        {{else}}
-          No inbound transfers to display
         {{/each}}
       </table>
+      {{else}}
+          No inbound transfers to display
+      {{/if}}
       
       {{#if userEnrolled}}
         <form id="upload-file" action="/upload-file" method="post" encType="multipart/form-data">

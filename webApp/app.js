@@ -177,7 +177,9 @@ app.post('/transferComplete', async function(req, res) {
   if (committedObject.payload.commitStatus == 'SUCCESS'){
     console.log("success!");
   }
-  res.status(200);
+  setTimeout(function(){
+    res.redirect("/");
+  },5000);
 });
 
 // Commit the selected file to IPFS, and record the transaction in our chaincode
@@ -229,8 +231,10 @@ app.post('/upload-file', async function(req, res) {
       if (committedObject.payload.commitStatus == 'SUCCESS'){
         console.log("success!");
       }
-      //res.render('home', {user: req.session.user.cn, message: msg});
-      res.redirect("/");
+      setTimeout(function(){
+        res.redirect("/");
+      },5000);
+      
     }
 
 });

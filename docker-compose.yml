@@ -158,90 +158,68 @@ services:
     #  - orderer.example.com
     #  - peer0.org1.example.com
     #  - couchdb
-  chaincode:
-    container_name: chaincode
-    image: hyperledger/fabric-ccenv
-    tty: true
-    environment:
-      - GOPATH=/opt/gopath
-      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - FABRIC_LOGGING_SPEC=DEBUG
-      - CORE_PEER_ID=example02
-      - CORE_PEER_ADDRESS=peer:7051
-      - CORE_PEER_LOCALMSPID=DEFAULT
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
-    working_dir: /opt/gopath/src/chaincode
-    command: /bin/bash -c 'sleep 6000000'
-    volumes:
-        - /var/run/:/host/var/run/
-        - ./crypto-config/peerOrganizations/org1.example.com/msp:/etc/hyperledger/msp
-        - ./chaincode:/opt/gopath/src/chaincode
-    depends_on:
-      - orderer.example.com
-      - peer0.org1.example.com
   
-  ipfs0:
-    container_name: ipfs0
-    image: ipfs/go-ipfs
-    ports:
-          - "4001:4001"
-          - "5001:5001"
-          - "8081:8080"
-    volumes:
-      - ./var/ipfs0-docker-data:/data/ipfs/
-      - ./var/ipfs0-docker-staging:/export
-    networks:
-      basic:
-        ipv4_address: 10.6.1.5
-    #command: ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '["http://localhost:3000"]' && ipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods '["PUT", "GET", "POST"]'
+  # ipfs0:
+  #   container_name: ipfs0
+  #   image: ipfs/go-ipfs
+  #   ports:
+  #         - "4001:4001"
+  #         - "5001:5001"
+  #         - "8081:8080"
+  #   volumes:
+  #     - ./var/ipfs0-docker-data:/data/ipfs/
+  #     - ./var/ipfs0-docker-staging:/export
+  #   networks:
+  #     basic:
+  #       ipv4_address: 10.6.1.5
+    
+  # ipfs1:
+  #   container_name: ipfs1
+  #   image: ipfs/go-ipfs
+  #   ports:
+  #         - "4101:4001"
+  #         - "5101:5001"
+  #         - "8181:8080"
+  #   volumes:
+  #     - ./var/ipfs1-docker-data:/data/ipfs/
+  #     - ./var/ipfs1-docker-staging:/export
+  #   networks:
+  #     basic:
+  #       ipv4_address: 10.6.1.7
 
-  ipfs1:
-    container_name: ipfs1
-    image: ipfs/go-ipfs
-    ports:
-          - "4101:4001"
-          - "5101:5001"
-          - "8181:8080"
-    volumes:
-      - ./var/ipfs1-docker-data:/data/ipfs/
-      - ./var/ipfs1-docker-staging:/export
-    networks:
-      basic:
-        ipv4_address: 10.6.1.7
+  # ipfs-cluster0:
+  #   container_name: ipfs-cluster0
+  #   image: ipfs/ipfs-cluster
+  #   depends_on:
+  #     - ipfs0
+  #   environment:
+  #     CLUSTER_SECRET: 1aebe6d1ff52d96241e00d1abbd1be0743e3ccd0e3f8a05e3c8dd2bbbddb7b93
+  #     IPFS_API: /ip4/10.6.1.5/tcp/5001
+  #   ports:
+  #         - "9094:9094"
+  #         - "9095:9095"
+  #         - "9096:9096"
+  #   volumes:
+  #     - ./var/ipfs-cluster0:/data/ipfs-cluster/
+  #   networks:
+  #     basic:
+  #       ipv4_address: 10.6.1.6
 
-  ipfs-cluster0:
-    container_name: ipfs-cluster0
-    image: ipfs/ipfs-cluster
-    depends_on:
-      - ipfs0
-    environment:
-      CLUSTER_SECRET: 1aebe6d1ff52d96241e00d1abbd1be0743e3ccd0e3f8a05e3c8dd2bbbddb7b93
-      IPFS_API: /ip4/10.6.1.5/tcp/5001
-    ports:
-          - "9094:9094"
-          - "9095:9095"
-          - "9096:9096"
-    volumes:
-      - ./var/ipfs-cluster0:/data/ipfs-cluster/
-    networks:
-      basic:
-        ipv4_address: 10.6.1.6
-
-  ipfs-cluster1:
-    container_name: ipfs-cluster1
-    image: ipfs/ipfs-cluster
-    depends_on:
-      - ipfs1
-      - ipfs-cluster0
-    environment:
-      CLUSTER_SECRET: 1aebe6d1ff52d96241e00d1abbd1be0743e3ccd0e3f8a05e3c8dd2bbbddb7b93
-      IPFS_API: /ip4/10.6.1.7/tcp/5001
-    ports:
-          - "9194:9094"
-          - "9195:9095"
-          - "9196:9096"
-    volumes:
-      - ./var/ipfs-cluster1:/data/ipfs-cluster/
-    networks:
-      basic:
-        ipv4_address: 10.6.1.8
+  # ipfs-cluster1:
+  #   container_name: ipfs-cluster1
+  #   image: ipfs/ipfs-cluster
+  #   depends_on:
+  #     - ipfs1
+  #     - ipfs-cluster0
+  #   environment:
+  #     CLUSTER_SECRET: 1aebe6d1ff52d96241e00d1abbd1be0743e3ccd0e3f8a05e3c8dd2bbbddb7b93
+  #     IPFS_API: /ip4/10.6.1.7/tcp/5001
+  #   ports:
+  #         - "9194:9094"
+  #         - "9195:9095"
+  #         - "9196:9096"
+  #   volumes:
+  #     - ./var/ipfs-cluster1:/data/ipfs-cluster/
+  #   networks:
+  #     basic:
+  #       ipv4_address: 10.6.1.8
