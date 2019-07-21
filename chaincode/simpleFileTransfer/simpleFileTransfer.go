@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -32,6 +33,8 @@ type fileTransfer struct {
 	Recipient        string `json:"recipient"`
 	FileName         string `json:"fileName"`
 	TransferComplete bool   `json:"transferComplete"`
+	CreationTime     string `json:"creationTime"`
+	CompletionTime   string `json:"completionTime`
 }
 
 /*
@@ -57,8 +60,6 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response 
 		return s.initLedger(APIstub)
 	} else if function == "createTransfer" {
 		return s.createTransfer(APIstub, args)
-		/*} else if function == "queryAllTransfers" {
-		return s.queryAllTransfers(APIstub, args) */
 	} else if function == "queryTransfersByRecipient" {
 		return s.queryTransfersByRecipient(APIstub, args)
 	} else if function == "queryTransfersByOriginator" {
@@ -114,12 +115,24 @@ func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args
 	fileHash := args[1]
 	recipient := args[2]
 	filename := args[3]
+	// Set to the currennt time, cutting off everything after whole seconds
+	now := time.Now().String()
+	creationTime := now[:19]
+	completionTime := ""
 
 	if err != nil {
 		return shim.Error("Failed to get transfer: " + err.Error())
 	}
 
-	var transfer = fileTransfer{UUID: uuid, Originator: originator, FileHash: fileHash, Recipient: recipient, FileName: filename, TransferComplete: false}
+	var transfer = fileTransfer{
+		UUID:             uuid,
+		Originator:       originator,
+		FileHash:         fileHash,
+		Recipient:        recipient,
+		FileName:         filename,
+		TransferComplete: false,
+		CreationTime:     creationTime,
+		CompletionTime:   completionTime}
 
 	transferAsBytes, _ := json.Marshal(transfer)
 
@@ -149,6 +162,9 @@ func (s *SmartContract) markTransferAsRead(APIstub shim.ChaincodeStubInterface, 
 		return shim.Error(err.Error())
 	}
 	transferToComplete.TransferComplete = true
+	// Set to the currennt time, cutting off everything after whole seconds
+	now := time.Now().String()
+	transferToComplete.CompletionTime = now[:19]
 
 	transferJSONasBytes, _ := json.Marshal(transferToComplete)
 	err = APIstub.PutState(uuid, transferJSONasBytes) //rewrite the transfer

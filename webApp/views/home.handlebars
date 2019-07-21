@@ -16,15 +16,19 @@
         <tr>
           <th>File Name</th>
           <th>IPFS Hash</th>
+          <th>Time Created</th>
           <th>Recipient</th>
           <th>Complete</th>
+          <th>Time Completed</th>
         </tr>
         {{#each userOriginatedTransfers}}
           <tr>
             <td>{{this.Record.fileName}}</td>
             <td>{{this.Record.fileHash}}<br>
+            <td>{{this.Record.creationTime}}</td>
             <td>{{this.Record.recipient}}</td>
             <td>{{this.Record.transferComplete}}</td>
+            <td>{{this.Record.CompletionTime}}</td>
           </tr>
         {{else}}
           No outgoing transfers to display
@@ -36,17 +40,21 @@
         <tr>
           <th>File Name</th>
           <th>IPFS Hash</th>
+          <th>Time Created</th>
           <th>Originator</th>
           <th>Actions</th>
           <th>Complete</th>
+          <th>Time Completed</th>
         </tr>
         {{#each userRecipientTransfers}}
           <tr>
             <td>{{this.Record.fileName}}</td>
             <td>{{this.Record.fileHash}}<br>
+            <td>{{this.Record.creationTime}}</td>
             <td>{{this.Record.recipient}}</td>
             <td><button type="button" onclick='openFromIPFS("{{this.Record.fileHash}}", "{{this.Record.fileName}}", "{{this.Record.uuid}}")'>Open</button></td>
             <td>{{this.Record.transferComplete}}</td>
+            <td>{{this.Record.CompletionTime}}</td>
           </tr>
         {{else}}
           No inbound transfers to display
