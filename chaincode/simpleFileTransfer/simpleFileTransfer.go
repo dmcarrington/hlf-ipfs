@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -32,6 +33,8 @@ type fileTransfer struct {
 	Recipient        string `json:"recipient"`
 	FileName         string `json:"fileName"`
 	TransferComplete bool   `json:"transferComplete"`
+	CreationTime     string `json:"creationTime"`
+	CompletionTime   string `json:"completionTime`
 }
 
 /*
@@ -57,12 +60,12 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response 
 		return s.initLedger(APIstub)
 	} else if function == "createTransfer" {
 		return s.createTransfer(APIstub, args)
-	} else if function == "queryAllTransfers" {
-		return s.queryAllTransfers(APIstub, args)
 	} else if function == "queryTransfersByRecipient" {
 		return s.queryTransfersByRecipient(APIstub, args)
 	} else if function == "queryTransfersByOriginator" {
 		return s.queryTransfersByOriginator(APIstub, args)
+	} else if function == "markTransferAsRead" {
+		return s.markTransferAsRead(APIstub, args)
 	}
 
 	return shim.Error("Invalid Smart Contract function name.")
@@ -112,24 +115,66 @@ func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args
 	fileHash := args[1]
 	recipient := args[2]
 	filename := args[3]
-
-	// Ensure that this transfer has not already been created before continuing
-	key, _ := APIstub.CreateCompositeKey("fileTransfer", []string{originator, fileHash, recipient})
-	existingTransfer, err := APIstub.GetState(key)
+	// Set to the currennt time, cutting off everything after whole seconds
+	now := time.Now().String()
+	creationTime := now[:19]
+	completionTime := ""
 
 	if err != nil {
 		return shim.Error("Failed to get transfer: " + err.Error())
-	} else if existingTransfer != nil {
-		return shim.Error("This transfer already exists: " + fileHash)
 	}
 
-	var transfer = fileTransfer{UUID: uuid, Originator: originator, FileHash: fileHash, Recipient: recipient, FileName: filename, TransferComplete: false}
+	var transfer = fileTransfer{
+		UUID:             uuid,
+		Originator:       originator,
+		FileHash:         fileHash,
+		Recipient:        recipient,
+		FileName:         filename,
+		TransferComplete: false,
+		CreationTime:     creationTime,
+		CompletionTime:   completionTime}
 
 	transferAsBytes, _ := json.Marshal(transfer)
 
-	APIstub.PutState(key, transferAsBytes)
+	APIstub.PutState(uuid, transferAsBytes)
 
 	return shim.Success(nil)
+}
+
+func (s *SmartContract) markTransferAsRead(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+
+	uuid := args[0]
+	// get object with uuid
+	transferAsBytes, err := APIstub.GetState(uuid)
+
+	if err != nil {
+		return shim.Error("Failed to get transfer:" + err.Error())
+	} else if transferAsBytes == nil {
+		return shim.Error("Transfer does not exist")
+	}
+
+	transferToComplete := fileTransfer{}
+	err = json.Unmarshal(transferAsBytes, &transferToComplete) //unmarshal it aka JSON.parse()
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	transferToComplete.TransferComplete = true
+	// Set to the currennt time, cutting off everything after whole seconds
+	now := time.Now().String()
+	transferToComplete.CompletionTime = now[:19]
+
+	transferJSONasBytes, _ := json.Marshal(transferToComplete)
+	err = APIstub.PutState(uuid, transferJSONasBytes) //rewrite the transfer
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	fmt.Println("- end markTransferAsRead (success)")
+	return shim.Success(nil)
+
 }
 
 // ============= queryTransfersByOriginator =================================================
@@ -236,50 +281,6 @@ func (t *SmartContract) queryTransfersByRecipient(APIstub shim.ChaincodeStubInte
 	buffer.WriteString("]")
 
 	fmt.Printf("- queryTransfersByRecipient:\n%s\n", buffer.String())
-
-	return shim.Success(buffer.Bytes())
-}
-
-// ==================== queryAllTransfers =================================================
-// queryTransfersByRecipient queries for transfers based on a passed in originator.
-// This is an example of a query using the partial composite key to locate a record
-// =========================================================================================
-func (s *SmartContract) queryAllTransfers(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
-
-	resultsIterator, err := APIstub.GetStateByPartialCompositeKey("fileTransfer", []string{args[0]})
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-	defer resultsIterator.Close()
-
-	// buffer is a JSON array containing QueryResults
-	var buffer bytes.Buffer
-	buffer.WriteString("[")
-
-	bArrayMemberAlreadyWritten := false
-	for resultsIterator.HasNext() {
-		queryResponse, err := resultsIterator.Next()
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-		// Add a comma before array members, suppress it for the first array member
-		if bArrayMemberAlreadyWritten == true {
-			buffer.WriteString(",")
-		}
-		buffer.WriteString("{\"Key\":")
-		buffer.WriteString("\"")
-		buffer.WriteString(queryResponse.Key)
-		buffer.WriteString("\"")
-
-		buffer.WriteString(", \"Record\":")
-		// Record is a JSON object, so we write as-is
-		buffer.WriteString(string(queryResponse.Value))
-		buffer.WriteString("}")
-		bArrayMemberAlreadyWritten = true
-	}
-	buffer.WriteString("]")
-
-	fmt.Printf("- queryAllTransfers:\n%s\n", buffer.String())
 
 	return shim.Success(buffer.Bytes())
 }

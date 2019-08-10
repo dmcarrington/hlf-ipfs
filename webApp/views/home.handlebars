@@ -12,38 +12,58 @@
       <p><b>Username: </b>{{user}}</p>
       <p><b>Fabric enrollment status: </b>{{userEnrolled}}</p>
       <p><b>Outgoing Transfers:</b></p>
-      <table>
-        <tr>
-          <th>File Hash</th>
-          <th>Recipient</th>
-        </tr>
-        {{#each userOriginatedTransfers}}
+      {{#if userOriginatedTransfers}}
+        <table>
           <tr>
-            <td>{{this.Record.fileHash}}<br>
-            <td>{{this.Record.recipient}}</td>
+            <th>File Name</th>
+            <th>IPFS Hash</th>
+            <th>Time Created</th>
+            <th>Recipient</th>
+            <th>Complete</th>
+            <th>Time Completed</th>
           </tr>
-        {{else}}
+          {{#each userOriginatedTransfers}}
+            <tr>
+              <td>{{this.Record.fileName}}</td>
+              <td>{{this.Record.fileHash}}<br>
+              <td>{{this.Record.creationTime}}</td>
+              <td>{{this.Record.recipient}}</td>
+              <td>{{this.Record.transferComplete}}</td>
+              <td>{{this.Record.CompletionTime}}</td>
+            </tr>
+          {{/each}}
+        </table>
+      {{else}}
           No outgoing transfers to display
-        {{/each}}
-      </table>
+      {{/if}}
       <br>
       <p><b>Incoming Transfers:</b></p>
+      {{#if userRecipientTransfers}}
       <table>
         <tr>
-          <th>File Hash</th>
+          <th>File Name</th>
+          <th>IPFS Hash</th>
+          <th>Time Created</th>
           <th>Originator</th>
           <th>Actions</th>
+          <th>Complete</th>
+          <th>Time Completed</th>
         </tr>
         {{#each userRecipientTransfers}}
           <tr>
+            <td>{{this.Record.fileName}}</td>
             <td>{{this.Record.fileHash}}<br>
+            <td>{{this.Record.creationTime}}</td>
             <td>{{this.Record.recipient}}</td>
-            <td><button type="button" onclick='openFromIPFS("{{this.Record.fileHash}}", "{{this.Record.fileName}}")'>Open</button></td>
+            <td><button type="button" onclick='openFromIPFS("{{this.Record.fileHash}}", "{{this.Record.fileName}}", "{{this.Record.uuid}}")'>Open</button></td>
+            <td>{{this.Record.transferComplete}}</td>
+            <td>{{this.Record.CompletionTime}}</td>
           </tr>
-        {{else}}
-          No inbound transfers to display
         {{/each}}
       </table>
+      {{else}}
+          No inbound transfers to display
+      {{/if}}
       
       {{#if userEnrolled}}
         <form id="upload-file" action="/upload-file" method="post" encType="multipart/form-data">
@@ -74,17 +94,46 @@
 {{/if}}
 <script type="text/javascript" src="ipfs-mini.min.js"></script>
 <script>
-  function openFromIPFS(fileHash, filename){
+  async function openFromIPFS(fileHash, filename, uuid){
     console.log(fileHash);
-    var ipfs = new IPFS({provider: 'ipfs.infura.io', host: 'ipfs.infura.io', port: '5001', protocol: 'https'});
-    ipfs.cat(fileHash, (err, result) => {
+    console.log(uuid);
+
+    var ipfs = new IPFS({host: 'ipfs.infura.io', port: '5001', protocol: 'https'});
+
+    ipfs.cat(fileHash, function(err, result) {
       if(err) {
         console.log("ERROR: ", err);
+        // TODO: report the error
       } else {
         console.log("Success:");
         console.log(result);
-        // TODO: save result as filename
+        // Save result as filename.
+        // TODO: fix for non-text files
+        const resultBlob = new Blob([result], { type: 'plain/text',
+                                      endings: 'native' });
+
+        const url = window.URL.createObjectURL(resultBlob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+
+        // Tell the app to log the fact that we have completed this transfer
+        fetch('/transferComplete', {
+          method: 'post',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            uuid: uuid
+          })
+        }); 
+        
       }
+      
     });
   }
 </script>

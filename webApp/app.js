@@ -139,6 +139,49 @@ app.get('/signin', function(req, res){
   res.render('signin');
 });
 
+// Following the successful download of a file, mark the transfer as being complete in the chaincode
+app.post('/transferComplete', async function(req, res) {
+  console.log('in transferComplete');
+  console.log("user: ", req.session.user);
+  console.log(req.body);
+
+  const username = req.session.user.cn;
+  const uuid = req.body.uuid;
+  // Invoke the markTransferAsRead function as this user with this uuid
+  const fcn = "markTransferAsRead";
+  const args = [uuid];
+  
+  var fabricClient = require('./config/FabricClient');
+  await fabricClient.initCredentialStores();
+  await fabricClient.getCertificateAuthority();
+  await fabricClient.getUserContext(username.trim(), true);
+  const proposeTransaction = require('./invoke.js').proposeTransaction;
+  const proposalObject = await proposeTransaction(fabricClient, fcn, args);
+  if (!proposalObject.success){
+    res.send({
+      success: 500, 
+      message: "Unable to propose your transaction"});
+  }
+      
+  const commitTransaction = require('./invoke.js').commitTransaction;
+  const committedObject = await commitTransaction(fabricClient, 
+    proposalObject.payload.txId, 
+    proposalObject.payload.proposalResponses, 
+    proposalObject.payload.proposal);
+  if (!committedObject.success){
+    res.send({
+    success: 500, 
+    message: "Unable to commit your transaction"});
+  }
+
+  if (committedObject.payload.commitStatus == 'SUCCESS'){
+    console.log("success!");
+  }
+  setTimeout(function(){
+    res.redirect("/");
+  },5000);
+});
+
 // Commit the selected file to IPFS, and record the transaction in our chaincode
 app.post('/upload-file', async function(req, res) {
 
@@ -161,7 +204,7 @@ app.post('/upload-file', async function(req, res) {
       const msg = "File commited sucessfully: " + commitHash;
       const fcn = "createTransfer";
       const args = [req.session.user.cn.trim(), commitHash, recipient, file.name];
-      console.log("Args: ", args);
+  
       var fabricClient = require('./config/FabricClient');
       await fabricClient.initCredentialStores();
       await fabricClient.getCertificateAuthority();
@@ -188,8 +231,10 @@ app.post('/upload-file', async function(req, res) {
       if (committedObject.payload.commitStatus == 'SUCCESS'){
         console.log("success!");
       }
-      //res.render('home', {user: req.session.user.cn, message: msg});
-      res.redirect("/");
+      setTimeout(function(){
+        res.redirect("/");
+      },5000);
+      
     }
 
 });
