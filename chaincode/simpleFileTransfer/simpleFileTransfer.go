@@ -29,12 +29,16 @@ type SmartContract struct {
 type fileTransfer struct {
 	UUID             string `json:"uuid"`
 	Originator       string `json:"originator"`
-	FileHash         string `json:"fileHash"`
 	Recipient        string `json:"recipient"`
 	FileName         string `json:"fileName"`
 	TransferComplete bool   `json:"transferComplete"`
 	CreationTime     string `json:"creationTime"`
 	CompletionTime   string `json:"completionTime`
+}
+
+// keep the fileHash in private data
+type fileTransferPrivate struct {
+	FileHash string `json:"fileHash"`
 }
 
 /*
@@ -125,9 +129,9 @@ func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args
 	}
 
 	var transfer = fileTransfer{
-		UUID:             uuid,
-		Originator:       originator,
-		FileHash:         fileHash,
+		UUID:       uuid,
+		Originator: originator,
+		//FileHash:         fileHash,
 		Recipient:        recipient,
 		FileName:         filename,
 		TransferComplete: false,
@@ -136,7 +140,14 @@ func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args
 
 	transferAsBytes, _ := json.Marshal(transfer)
 
-	APIstub.PutState(uuid, transferAsBytes)
+	APIstub.PutPrivateData("collectionTransfer", uuid, transferAsBytes)
+
+	// now repeat for the private data
+	var transferPrivate = fileTransferPrivate{
+		FileHash: fileHash}
+
+	transferAsBytes, _ = json.Marshal(transferPrivate)
+	APIstub.PutPrivateData("collectionTransferPrivateDetails", uuid, transferAsBytes)
 
 	return shim.Success(nil)
 }
