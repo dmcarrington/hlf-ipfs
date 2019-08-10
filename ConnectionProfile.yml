@@ -1,0 +1,59 @@
+name: "Org1 Client"
+version: "1.0"
+client:
+  organization: Org1
+  credentialStore:
+    path: "./hfc-key-store"
+    cryptoStore:
+      path: "./hfc-key-store"
+channels:
+  mychannel:
+    orderers:
+      - orderer.example.com
+    peers:
+      peer0.org1.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+    #chaincodes:
+    #  - minimalcc:v1
+organizations:
+  Org1:
+    mspid: Org1MSP
+    peers:
+      - peer0.org1.example.com
+    certificateAuthorities:
+      - ca.example.com
+    adminPrivateKey:
+      path: crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/3638d35b3ac5319172b3f2d014d639d6fac71812eea10685cbe8d92bea809fe5_sk
+    signedCert:
+      path: crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org1.example.com-cert.pem
+orderers:
+  orderer.example.com:
+    url: grpc://orderer.example.com:7050
+    #grpcOptions:
+    #  ssl-target-name-override: orderer.example.com
+    #  grpc-max-send-message-length: 15
+    tlsCACerts:
+      path: crypto-config/ordererOrganizations/example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+peers:
+  peer0.org1.example.com:
+    url: grpc://peer0.org1.example.com:7051
+    eventUrl: grpc://peer0.org1.example.com:7053
+    #grpcOptions:
+    #  ssl-target-name-override: peer0.org1.example.com
+    #  grpc.keepalive_time_ms: 600000
+    tlsCACerts:
+      path: crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp/tlscacerts/tlsca.org1.example.com-cert.pem
+certificateAuthorities:
+  ca.example.com:
+    url: http://ca.example.com:7054
+    httpOptions:
+      verify: false
+    tlsCACerts:
+      path: crypto-config/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
+    registrar:
+      - enrollId: admin
+        enrollSecret: adminpw
+    caName: ca.example.com

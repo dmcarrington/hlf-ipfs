@@ -84,7 +84,7 @@ app.get('/', async function(req, res){
   if(req.session.user) {
     username = req.session.user.cn;
     
-    var fabricClient = require('./config/FabricClient');
+    var fabricClient = require('./FabricClient');
     await fabricClient.initCredentialStores();
     await fabricClient.getCertificateAuthority();
     let user = await fabricClient.getUserContext(username, true);
@@ -151,7 +151,7 @@ app.post('/transferComplete', async function(req, res) {
   const fcn = "markTransferAsRead";
   const args = [uuid];
   
-  var fabricClient = require('./config/FabricClient');
+  var fabricClient = require('./FabricClient');
   await fabricClient.initCredentialStores();
   await fabricClient.getCertificateAuthority();
   await fabricClient.getUserContext(username.trim(), true);
@@ -205,7 +205,7 @@ app.post('/upload-file', async function(req, res) {
       const fcn = "createTransfer";
       const args = [req.session.user.cn.trim(), commitHash, recipient, file.name];
   
-      var fabricClient = require('./config/FabricClient');
+      var fabricClient = require('./FabricClient');
       await fabricClient.initCredentialStores();
       await fabricClient.getCertificateAuthority();
       await fabricClient.getUserContext(req.session.user.cn.trim(), true);

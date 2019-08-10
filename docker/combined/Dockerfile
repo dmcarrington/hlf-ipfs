@@ -17,6 +17,7 @@ RUN npm install
 COPY webApp /server/webApp/
 ADD config /server/webApp/config
 ADD crypto-config /server/webApp/crypto-config
+COPY ConnectionProfile.yml /server/webApp/
 
 EXPOSE 3000
 

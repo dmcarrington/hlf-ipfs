@@ -2,7 +2,7 @@
 
 async function getUserEnrolmentStatus(username) {
   console.log('checking enrolment status for user: ', username);
-  var fabricClient = require('./config/FabricClient');
+  var fabricClient = require('./FabricClient');
   //var connection = fabricClient;
   //var fabricCAClient;
   await fabricClient.initCredentialStores();
@@ -16,7 +16,7 @@ async function getUserEnrolmentStatus(username) {
 }
 
 async function enrolUser(username, password) {
-  var fabricClient = require('./config/FabricClient');
+  var fabricClient = require('./FabricClient');
   //var FabricCAClient = require('fabric-ca-client');
   var connection = fabricClient;
   var fabricCAClient;

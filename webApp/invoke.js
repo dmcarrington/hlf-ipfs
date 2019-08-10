@@ -8,7 +8,7 @@ const serviceConfig = require('./services.json');
 
 async function queryChaincodeStatus(username) {
   console.log('Querying Chaincode status with user: ', username);
-  var fabricClient = require('./config/FabricClient');
+  var fabricClient = require('./FabricClient');
   var connection = fabricClient;
   var fabricCAClient;
   await connection.initCredentialStores();
