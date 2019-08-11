@@ -37,9 +37,9 @@ docker exec -e "CORE_PEER_LOCALMSPID=Org1MSP" -e "CORE_PEER_MSPCONFIGPATH=/etc/h
 CC_SRC_PATH="github.com/simpleFileTransfer"
 CHANNEL_NAME="mychannel"
 CC_RUNTIME_LANGUAGE="golang"
-VERSION="0.1"
+VERSION="1.0"
 
 ## install and instantiate chaincode
-docker exec cli peer chaincode install -n simpleFileTransfer -v 0.1 -p "$CC_SRC_PATH" -l "$CC_RUNTIME_LANGUAGE"
-docker exec cli peer chaincode instantiate -o orderer.example.com:7050 -C mychannel -n simpleFileTransfer -l "$CC_RUNTIME_LANGUAGE" -v 0.1 --collections-config /opt/gopath/src/github.com/simpleFileTransfer/collections_config.json -c '{"Args":[]}' -P "OR ('Org1MSP.member')"
+docker exec cli peer chaincode install -n simpleFileTransfer -v 1.0 -p "$CC_SRC_PATH" -l "$CC_RUNTIME_LANGUAGE"
+docker exec cli peer chaincode instantiate -o orderer.example.com:7050 -C mychannel -n simpleFileTransfer -l "$CC_RUNTIME_LANGUAGE" -v 1.0 --collections-config /opt/gopath/src/github.com/simpleFileTransfer/collections_config.json -c '{"Args":[]}' -P "OR ('Org1MSP.member')"
 sleep 10
