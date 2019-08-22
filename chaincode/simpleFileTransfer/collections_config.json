@@ -2,7 +2,7 @@
     {
          "name": "collectionTransfer",
          "policy": "OR('Org1MSP.member')",
-         "requiredPeerCount": 1,
+         "requiredPeerCount": 0,
          "maxPeerCount": 3,
          "blockToLive":1000000,
          "memberOnlyRead": true
@@ -11,7 +11,7 @@
     {
          "name": "collectionTransferPrivateDetails",
          "policy": "OR('Org1MSP.member')",
-         "requiredPeerCount": 1,
+         "requiredPeerCount": 0,
          "maxPeerCount": 3,
          "blockToLive":3,
          "memberOnlyRead": true

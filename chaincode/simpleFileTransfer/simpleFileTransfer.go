@@ -38,6 +38,7 @@ type fileTransfer struct {
 
 // keep the fileHash in private data
 type fileTransferPrivate struct {
+	UUID     string `json:"uuid"`
 	FileHash string `json:"fileHash"`
 }
 
@@ -97,15 +98,56 @@ func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Respo
 
 // ======================== createTransfer =================================================
 // createTransfer creates a new transfer of a single file from an originator and recipient.
-// args[0]: originator
-// args[1]: hash of the file in ipfs
-// args[2]: recipient
-// args[3]: filename
+// export TRANSFER=$(echo -n "{\"Originator\":\"alice\",\"FileHash\":\"ASDF1234\",\"Recipient\":\"Bob\",\"FileName\":\"File.txt\"}" | base64)
+// peer chaincode invoke -C mychannel -n simpleFileTransfer -c '{"Args":["createTransfer"]}' --transient "{\"transfer\":\"$TRANSFER\"}"
 // =========================================================================================
 func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 4 {
-		return shim.Error("Incorrect number of arguments. Expecting 4")
+	if len(args) != 0 {
+		return shim.Error("Incorrect number of arguments. Private transaction data must be passed in transient map.")
+	}
+
+	type fileTransferTransient struct {
+		//UUID             string `json:"uuid"`
+		Originator string `json:"Originator"`
+		FileHash   string `json:"FileHash"`
+		Recipient  string `json:"Recipient"`
+		FileName   string `json:"FileName"`
+		//TransferComplete bool   `json:"transferComplete"`
+		//CreationTime     string `json:"creationTime"`
+		//CompletionTime   string `json:"completionTime`
+	}
+
+	transMap, err := APIstub.GetTransient()
+	if err != nil {
+		return shim.Error("Error getting transient: " + err.Error())
+	}
+
+	if _, ok := transMap["transfer"]; !ok {
+		return shim.Error("transfer must be a key in the transient map")
+	}
+
+	if len(transMap["transfer"]) == 0 {
+		return shim.Error("transfer value in the transient map must be a non-empty JSON string")
+	}
+
+	var transferTransientInput fileTransferTransient
+	err = json.Unmarshal(transMap["transfer"], &transferTransientInput)
+	if err != nil {
+		return shim.Error("Failed to decode JSON of: " + string(transMap["transfer"]))
+	}
+
+	if len(transferTransientInput.Originator) == 0 {
+		return shim.Error("Originator field must be a non-empty string")
+	}
+	if len(transferTransientInput.FileHash) == 0 {
+		return shim.Error("FileHash field must be a non-empty string")
+	}
+	if len(transferTransientInput.Recipient) == 0 {
+		return shim.Error("Recipient field must be a non-empty string")
+	}
+	if len(transferTransientInput.FileName) == 0 {
+		return shim.Error("FileName field must be a non-empty string")
 	}
 
 	id, err := uuid.NewUUID()
@@ -115,10 +157,10 @@ func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args
 	}
 	uuid := id.String()
 
-	originator := args[0]
-	fileHash := args[1]
-	recipient := args[2]
-	filename := args[3]
+	//originator := args[0]
+	//fileHash := args[1]
+	//recipient := args[2]
+	//filename := args[3]
 	// Set to the currennt time, cutting off everything after whole seconds
 	now := time.Now().String()
 	creationTime := now[:19]
@@ -130,13 +172,14 @@ func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args
 
 	var transfer = fileTransfer{
 		UUID:       uuid,
-		Originator: originator,
+		Originator: transferTransientInput.Originator,
 		//FileHash:         fileHash,
-		Recipient:        recipient,
-		FileName:         filename,
+		Recipient:        transferTransientInput.Recipient,
+		FileName:         transferTransientInput.FileName,
 		TransferComplete: false,
 		CreationTime:     creationTime,
-		CompletionTime:   completionTime}
+		CompletionTime:   completionTime,
+	}
 
 	transferAsBytes, _ := json.Marshal(transfer)
 
@@ -144,7 +187,9 @@ func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args
 
 	// now repeat for the private data
 	var transferPrivate = fileTransferPrivate{
-		FileHash: fileHash}
+		UUID:     uuid,
+		FileHash: transferTransientInput.FileHash,
+	}
 
 	transferAsBytes, _ = json.Marshal(transferPrivate)
 	APIstub.PutPrivateData("collectionTransferPrivateDetails", uuid, transferAsBytes)
