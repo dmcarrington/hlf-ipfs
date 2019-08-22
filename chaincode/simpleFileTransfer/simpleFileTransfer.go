@@ -98,7 +98,7 @@ func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Respo
 
 // ======================== createTransfer =================================================
 // createTransfer creates a new transfer of a single file from an originator and recipient.
-// export TRANSFER=$(echo -n "{\"Originator\":\"alice\",\"FileHash\":\"ASDF1234\",\"Recipient\":\"Bob\",\"FileName\":\"File.txt\"}" | base64)
+// export TRANSFER=$(echo -n "{\"Originator\":\"alice\",\"FileHash\":\"ASDF1234\",\"Recipient\":\"Bob\",\"FileName\":\"File.txt\"}" | base64 | tr -d \\n)
 // peer chaincode invoke -C mychannel -n simpleFileTransfer -c '{"Args":["createTransfer"]}' --transient "{\"transfer\":\"$TRANSFER\"}"
 // =========================================================================================
 func (s *SmartContract) createTransfer(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
