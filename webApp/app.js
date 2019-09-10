@@ -209,8 +209,8 @@ app.post('/upload-file', async function(req, res) {
       await fabricClient.initCredentialStores();
       await fabricClient.getCertificateAuthority();
       await fabricClient.getUserContext(req.session.user.cn.trim(), true);
-      const proposeTransaction = require('./invoke.js').proposeTransaction;
-      const proposalObject = await proposeTransaction(fabricClient, fcn, args);
+      const proposeTransactionTransient = require('./invoke.js').proposeTransactionTransient;
+      const proposalObject = await proposeTransactionTransient(fabricClient, fcn, args);
       if (!proposalObject.success){
         res.send({
           success: 500, 
