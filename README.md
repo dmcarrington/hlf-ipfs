@@ -1,7 +1,7 @@
 # Hyperledger Fabric IPFS file transfer recorder
 
 This rproject demonstrates how Hyperledger Fabric can be used to record transfers of files transferred across the IPFS network. It is based upon the hlf-ldap repository for authenticating user accounts. At a high level, a user, once enrolled in the Fabric CA, can initiate a file transfer using IPFS to another user on the system. The details of the transfer, including originator, recipient, file name and IPFS entry, are recorded in the Fabric chaincode. The intention is that this information could be examined in future by a hypothetical auditor.
-
+ 
 ## Basic Network Config
 
 Note that this basic configuration uses pre-generated certificates and
