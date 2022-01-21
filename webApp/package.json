@@ -17,7 +17,7 @@
     "hbs": "~4.0.1",
     "http-errors": "~1.6.2",
     "ipfs-http-client": "^32.0.1",
-    "log4js": "^4.4.0",
+    "log4js": "^6.4.0",
     "method-override": "^3.0.0",
     "morgan": "~1.9.0",
     "npm": "^5.5.1",
